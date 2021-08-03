@@ -1,0 +1,50 @@
+library("tidyverse")
+library("openxlsx")
+
+
+##### Data on predation preventation from temperature (mortFishAqPredT) #####
+# load the data
+# This uses physological measures of predators to get the potential predation effect of T
+path <- "./inSALMO Fish Parameters.xlsx"
+sheetName <- "mortAqByPredMet"
+
+makeData  <-  function(path, sheetName){
+  read.xlsx(xlsxFile = path,
+            sheet = sheetName,
+            na.strings = "NA") %>% 
+  group_by(author, year, journal, species) %>% 
+  mutate(unitlessValue = 1 - value/max(value)) %>% 
+  ungroup()
+}
+
+# do a logistic fit
+makeModel  <-  function(data){
+  glm(data$unitlessValue ~ data$X,
+      family=quasibinomial(logit),
+      data=data)
+}
+
+
+calculateX1  <- function(model){
+  -(log(1/0.1-1) + model[[1]][1])/model[[1]][2]
+} 
+
+
+calculateX9 <- function(model){
+  -(log(1/0.9-1) + model[[1]][1])/model[[1]][2]
+}
+
+calculateSurvival <- function(path, sheet, habitatVariable){
+  data <- makeData(path, sheet)
+  model <- makeModel(data)
+  X1 <- calculateX1(model)
+  X9 <- calculateX9(model)
+  B <- (log(0.1/0.9) * 2) / (X1 - X9)
+  A <- log(0.1/0.9) - (B * X1)
+  S <- exp(A + (B * habitatVariable)) / (1 + exp(A + (B * habitatVariable)))
+}
+
+temp <- 3.69
+
+S <- calculateSurvival(path, sheet, temp)
+S

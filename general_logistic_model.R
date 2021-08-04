@@ -39,6 +39,8 @@ calculateX9 <- function(model){
 
 # calculate the increase of survival provided by a habitat variable (based on inSTREAM 7.1)
 
+# note to self: break this function apart so a table of survival values can be easily made
+
 calculateSurvival <- function(path, sheetName, habitatVariable){
   data <- makeData(path, sheetName)
   model <- makeModel(data)
@@ -55,3 +57,4 @@ temp <- 3.69
 
 S <- calculateSurvival(path, sheetName, temp)
 S
+

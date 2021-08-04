@@ -34,8 +34,8 @@ calculateX9 <- function(model){
   -(log(1/0.9-1) + model[[1]][1])/model[[1]][2]
 }
 
-calculateSurvival <- function(path, sheet, habitatVariable){
-  data <- makeData(path, sheet)
+calculateSurvival <- function(path, sheetName, habitatVariable){
+  data <- makeData(path, sheetName)
   model <- makeModel(data)
   X1 <- calculateX1(model)
   X9 <- calculateX9(model)
@@ -46,5 +46,5 @@ calculateSurvival <- function(path, sheet, habitatVariable){
 
 temp <- 3.69
 
-S <- calculateSurvival(path, sheet, temp)
+S <- calculateSurvival(path, sheetName, temp)
 S

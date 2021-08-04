@@ -33,7 +33,6 @@ calculateX1  <- function(model){
 
 # calculate the X value where Y = 0.9
 
-calculateX1  <- function(model){
 calculateX9 <- function(model){
   -(log(1/0.9-1) + model[[1]][1])/model[[1]][2]
 }

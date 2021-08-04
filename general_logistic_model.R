@@ -3,8 +3,8 @@ library("openxlsx")
 
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
-# load the data
-# This uses physological measures of predators to get the potential predation effect of T
+# load the data (path and sheetName are currently hardcoded for testing)
+
 path <- "./inSALMO Fish Parameters.xlsx"
 sheetName <- "mortAqByPredMet"
 
@@ -18,21 +18,27 @@ makeData  <-  function(path, sheetName){
 }
 
 # do a logistic fit
+
 makeModel  <-  function(data){
   glm(data$unitlessValue ~ data$X,
       family=quasibinomial(logit),
       data=data)
 }
 
+# calculate the X value where Y = 0.1
 
 calculateX1  <- function(model){
   -(log(1/0.1-1) + model[[1]][1])/model[[1]][2]
 } 
 
+# calculate the X value where Y = 0.9
 
+calculateX1  <- function(model){
 calculateX9 <- function(model){
   -(log(1/0.9-1) + model[[1]][1])/model[[1]][2]
 }
+
+# calculate the increase of survival provided by a habitat variable (based on inSTREAM 7.1)
 
 calculateSurvival <- function(path, sheetName, habitatVariable){
   data <- makeData(path, sheetName)
@@ -43,6 +49,8 @@ calculateSurvival <- function(path, sheetName, habitatVariable){
   A <- log(0.1/0.9) - (B * X1)
   S <- exp(A + (B * habitatVariable)) / (1 + exp(A + (B * habitatVariable)))
 }
+
+# temp used as the environmental variable for testing.
 
 temp <- 3.69
 

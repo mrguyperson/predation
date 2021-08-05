@@ -12,7 +12,7 @@ makeData  <-  function(path, sheetName){
   read.xlsx(xlsxFile = path,
             sheet = sheetName,
             na.strings = "NA") %>% 
-  group_by(author, year, journal, species) %>% 
+  group_by(author, year, journal) %>% 
   mutate(unitlessValue = 1 - value/max(value)) %>% 
   ungroup()
 }

@@ -20,7 +20,9 @@ makeData  <-  function(path, sheetName){
 # do a logistic fit
 
 makeModel  <-  function(data){
-  glm(data$unitlessValue ~ data$X,
+  y <- data$unitlessValue
+  x <- data$X
+  glm(y ~ x,
       family=quasibinomial(logit),
       data=data)
 }
@@ -59,10 +61,10 @@ temp <- 3.69
 S <- calculateSurvival(path, sheetName, temp)
 S
 
-temperature <- seq(0,30,by=0.1)
-df <- data.frame(temperature)
+temperature <- list(seq(0,30,by=0.1))
+df <- data.frame(x = seq(0,30,by=0.1))
 
 model <- makeModel(makeData(path,sheetName))
 
-df %>% mutate(predict = predict.glm(model, type = "response"))
+df %>% mutate(predict = predict.glm(model, data.frame(x = seq(0,30,by=0.1)), type = 'response'))
   

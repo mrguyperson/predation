@@ -41,6 +41,7 @@ calculateX9 <- function(model){
 
 # note to self: break this function apart so a table of survival values can be easily made
 
+
 calculateSurvival <- function(path, sheetName, habitatVariable){
   data <- makeData(path, sheetName)
   model <- makeModel(data)
@@ -58,3 +59,10 @@ temp <- 3.69
 S <- calculateSurvival(path, sheetName, temp)
 S
 
+temperature <- seq(0,30,by=0.1)
+df <- data.frame(temperature)
+
+model <- makeModel(makeData(path,sheetName))
+
+df %>% mutate(predict = predict.glm(model, type = "response"))
+  

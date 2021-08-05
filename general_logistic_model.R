@@ -39,32 +39,28 @@ calculateX9 <- function(model){
   -(log(1/0.9-1) + model[[1]][1])/model[[1]][2]
 }
 
+# calculate A value for logistic function
+
+calculateA <- function(X1, B){
+  A <- log(0.1/0.9) - (B * X1) 
+}
+
+# calculate B value for logistic function
+
+calculateB <- function(X1, X9){
+  B <- (log(0.1/0.9) * 2) / (X1 - X9)
+}
 # calculate the increase of survival provided by a habitat variable (based on inSTREAM 7.1)
 
-# note to self: break this function apart so a table of survival values can be easily made
-
-
-calculateSurvival <- function(path, sheetName, habitatVariable){
-  data <- makeData(path, sheetName)
-  model <- makeModel(data)
-  X1 <- calculateX1(model)
-  X9 <- calculateX9(model)
-  B <- (log(0.1/0.9) * 2) / (X1 - X9)
-  A <- log(0.1/0.9) - (B * X1)
+calculateSurvival <- function(A, B, habitatVariable){
   S <- exp(A + (B * habitatVariable)) / (1 + exp(A + (B * habitatVariable)))
 }
 
-# temp used as the environmental variable for testing.
+# calculate a table of survival values for a range of habitat values
 
-temp <- 3.69
-
-S <- calculateSurvival(path, sheetName, temp)
-S
-
-temperature <- list(seq(0,30,by=0.1))
-df <- data.frame(x = seq(0,30,by=0.1))
-
-model <- makeModel(makeData(path,sheetName))
-
-df %>% mutate(predict = predict.glm(model, data.frame(x = seq(0,30,by=0.1)), type = 'response'))
+survivalTable <- function(path, sheetName, minVal, maxVal, interval){
+  model <- makeModel(makeData(path,sheetName))
+  df <- data.frame(x = seq(minVal, maxVal, by=interval))
+  df %>% mutate(predict = predict.glm(model, df, type = 'response'))
+}
   

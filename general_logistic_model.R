@@ -3,10 +3,6 @@ library("openxlsx")
 
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
-# load the data (path and sheetName are currently hardcoded for testing)
-
-path <- "./inSALMO Fish Parameters.xlsx"
-sheetName <- "mortAqByPredMet"
 
 makeData  <-  function(path, sheetName){
   read.xlsx(xlsxFile = path,

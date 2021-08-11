@@ -1,12 +1,13 @@
-setwd(getwd())
+library("here")
+
+setwd(here())
+
 source("general_logistic_model.R")
+source("data_processing.R")
 
 # load the data (path and sheetName are currently hardcoded for testing)
 
-path <- "./inSALMO Fish Parameters.xlsx"
-sheetName <- "mortAqByPredMet"
-
-data <- makeData(path, sheetName)
+data <- final_data()
 
 survival_variables <- data %>%
   distinct(variable)

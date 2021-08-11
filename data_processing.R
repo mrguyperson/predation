@@ -1,7 +1,8 @@
 library("tidyverse")
 library("openxlsx")
+library("here")
 
-setwd(getwd())
+setwd(here())
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
 # load the data
@@ -11,7 +12,8 @@ predTData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
                       na.strings = "NA") %>% 
   group_by(author, year, journal, species) %>% 
   mutate(unitlessValue = 1-value/max(value)) %>% 
-  ungroup() 
+  ungroup()  %>%
+  select(X, variable, unitlessValue)
 
 ##### Data on predation preventation from length (mortFishAqPredL) #####
 # load the data and convert all metrics to daily survival
@@ -22,7 +24,10 @@ predLData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
   mutate(dailySurvival = NA,
          dailySurvival = ifelse(units == "survival", measure^(1/time_days), dailySurvival),
          dailySurvival = ifelse(units == "daily survival", measure, dailySurvival),
-         dailySurvival = ifelse(units == "relative vlun.", 1-measure, dailySurvival))
+         unitlessValue = ifelse(units == "relative vlun.", 1-measure, dailySurvival)) %>%
+  rename(X = length_cm) %>%
+  select(X, variable, unitlessValue)
+
 
 ##### Data on predation preventation from depth (mortFishAqPredD) #####
 # load the data
@@ -37,7 +42,9 @@ predDepthData = predationPreData %>%
   filter(fishSize_mm =="< 50",
          variable == "Depth") %>% 
   mutate(fraction = cumlitaveFraction - lag(cumlitaveFraction),
-         fractionalOccurrence = fraction/max(fraction, na.rm = T)*maxSurvival)
+         unitlessValue = fraction/max(fraction, na.rm = T)*maxSurvival) %>%
+  rename(X = value) %>%
+  select(X, variable, unitlessValue)
 
 ##### Data on predation preventation from cover (mortFishAqPredH) #####
 # load the data
@@ -53,4 +60,9 @@ predDistData = predationPreData %>%
          variable == "Dis to Cover") %>% 
   mutate(fraction = cumlitaveFraction - lag(cumlitaveFraction),
          fraction = ifelse(is.na(fraction), cumlitaveFraction, fraction),
-         fractionalOccurrence = fraction/max(fraction, na.rm = T)*maxSurvival)
+         unitlessValue = fraction/max(fraction, na.rm = T)*maxSurvival) %>%
+  rename(X = value) %>%
+  select(X, variable, unitlessValue)
+
+final_data = bind_rows(predTData, predLData, predDepthData, predDistData)
+

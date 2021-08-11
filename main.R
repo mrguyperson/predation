@@ -1,3 +1,4 @@
+setwd(getwd())
 source("general_logistic_model.R")
 
 # load the data (path and sheetName are currently hardcoded for testing)

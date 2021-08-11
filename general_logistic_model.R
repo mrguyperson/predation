@@ -16,8 +16,8 @@ makeData  <-  function(path, sheetName){
 # do a logistic fit
 
 makeModel  <-  function(data){
-  y <- data$unitlessValue
-  x <- data$X
+  y <- data %>% select(unitlessValue)
+  x <- data %>% select(X)
   glm(y ~ x,
       family=quasibinomial(logit),
       data=data)

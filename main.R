@@ -1,5 +1,6 @@
 library("here")
-
+library("tidyverse")
+library("openxlsx")
 setwd(here())
 
 source("general_logistic_model.R")
@@ -12,13 +13,13 @@ data <- final_data()
 survival_variables <- data %>%
   distinct(variable)
 
-for(variable in survival_variables){
-  print(variable)
+for(x_variable in survival_variables){
+  print(x_variable)
+  #data %>% filter(variable == x_variable)
 }
 
-survival_increase_list<- c(length,
-                           cover,
-                           depth, 
-                           light, 
-                           density, 
-                           temperature)
+data %>% 
+  makeModel()
+
+
+### check out broom

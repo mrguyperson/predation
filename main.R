@@ -19,7 +19,7 @@ model_table <- final_data() %>%
   #unnest(fitVariable)
 model <- function(model_table, factor){
   model_table %>%
-    filter(variable == Temp) %>%
+    filter(variable == factor) %>%
     select(fitVariable) %>%
     .[[1]] %>%
     .[[1]]
@@ -28,4 +28,4 @@ model <- function(model_table, factor){
   #unnest(cols = c(fitVariable))
 
 df <- data.frame(X = seq(0, 30, by=0.1))
-df %>% mutate(predict = predict.glm(model, df, type = 'response'))
+df %>% mutate(predict = predict.glm(model(model_table, 'Temp'), df, type = 'response'))

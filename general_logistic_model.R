@@ -1,6 +1,6 @@
 library("tidyverse")
 library("openxlsx")
-
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
 
@@ -16,11 +16,11 @@ makeData  <-  function(path, sheetName){
 # do a logistic fit
 
 makeModel  <-  function(data){
-  y <- data %>% select(unitlessValue)
-  x <- data %>% select(X)
-  glm(y ~ x,
+  #y <- data %>% select(unitlessValue)
+  #x <- data %>% select(X)
+  data %>% glm(unitlessValue ~ X,
       family=quasibinomial(logit),
-      data=data)
+      data=.)
 }
 
 # calculate the X value where Y = 0.1
@@ -56,7 +56,15 @@ calculateSurvival <- function(A, B, habitatVariable){
 
 survivalTable <- function(path, sheetName, minVal, maxVal, interval){
   model <- makeModel(makeData(path,sheetName))
-  df <- data.frame(x = seq(minVal, maxVal, by=interval))
+  df <- data.frame(X = seq(minVal, maxVal, by=interval))
   df %>% mutate(predict = predict.glm(model, df, type = 'response'))
 }
-  
+
+path = "./inSALMO Fish Parameters.xlsx"
+sheetName = "mortAqByPredMet"
+
+data <- makeData(path, sheetName)
+model <- makeModel(data)
+
+
+survivalTable(path, sheetName, 0, 30, 0.1)

@@ -1,25 +1,31 @@
-library("here")
+#library("here")
 library("tidyverse")
 library("openxlsx")
-setwd(here())
+library("rstudioapi")
+library("broom")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 source("general_logistic_model.R")
 source("data_processing.R")
 
 # load the data (path and sheetName are currently hardcoded for testing)
 
-data <- final_data()
 
-survival_variables <- data %>%
-  distinct(variable)
-
-for(x_variable in survival_variables){
-  print(x_variable)
-  #data %>% filter(variable == x_variable)
+model_table <- final_data() %>% 
+  group_by(variable) %>%
+  do(fitVariable = glm(unitlessValue ~ X,
+                            family = quasibinomial(logit),
+                            data = .)) #%>%
+  #unnest(fitVariable)
+model <- function(model_table, factor){
+  model_table %>%
+    filter(variable == Temp) %>%
+    select(fitVariable) %>%
+    .[[1]] %>%
+    .[[1]]
 }
 
-data %>% 
-  makeModel()
+  #unnest(cols = c(fitVariable))
 
-
-### check out broom
+df <- data.frame(X = seq(0, 30, by=0.1))
+df %>% mutate(predict = predict.glm(model, df, type = 'response'))

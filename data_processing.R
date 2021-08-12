@@ -1,8 +1,8 @@
 library("tidyverse")
 library("openxlsx")
-library("here")
+#library("here")
 
-setwd(here())
+#setwd(here())
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
 # load the data
@@ -72,7 +72,7 @@ predDistData <- function(maxSurvival=0.9){
            fraction = ifelse(is.na(fraction), cumlitaveFraction, fraction),
            unitlessValue = fraction/max(fraction, na.rm = T)*maxSurvival) %>%
     rename(X = value) %>%
-    select(X, variable, unitlessValue)
+    select(variable, X, unitlessValue)
 }
 
 final_data  <- function(){

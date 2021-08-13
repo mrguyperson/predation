@@ -5,7 +5,7 @@ library("rstudioapi")
 library("broom")
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-source("general_logistic_model.R")
+#source("general_logistic_model.R")
 source("data_processing.R")
 
 # load the data (path and sheetName are currently hardcoded for testing)
@@ -13,7 +13,7 @@ source("data_processing.R")
 
 model_table <- final_data() %>% 
   group_by(variable) %>%
-  do(fitVariable = glm(unitlessValue ~ X,
+  do(fitVariable = glm(unitless_value ~ x,
                             family = quasibinomial(logit),
                             data = .)) #%>%
   #unnest(fitVariable)
@@ -27,5 +27,8 @@ model <- function(model_table, factor){
 
   #unnest(cols = c(fitVariable))
 
-df <- data.frame(X = seq(0, 30, by=0.1))
+final_data() %>% distinct(variable)
+
+
+df <- data.frame(variable = 'Temp', x = seq(0, 30, by=0.1))
 df %>% mutate(predict = predict.glm(model(model_table, 'Temp'), df, type = 'response'))

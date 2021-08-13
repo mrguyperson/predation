@@ -1,8 +1,5 @@
 library("tidyverse")
 library("openxlsx")
-#library("here")
-
-#setwd(here())
 
 ##### Data on predation preventation from temperature (mortFishAqPredT) #####
 # load the data

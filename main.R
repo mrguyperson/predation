@@ -13,14 +13,21 @@ source("data_processing.R")
 
 model_table <- final_data() %>% 
   group_by(variable) %>%
-  do(fitVariable = glm(unitless_value ~ x,
+  do(fit_variable = glm(unitless_value ~ x,
                             family = quasibinomial(logit),
                             data = .)) #%>%
   #unnest(fitVariable)
+
+model_table <- final_data() %>% 
+  group_by(variable) %>%
+  summarize(fit_variable = tidy(glm(unitless_value ~ x,
+                        family = quasibinomial(logit),
+                        data = .))) #%>%
+#unnest(fitVariable)
 model <- function(model_table, factor){
   model_table %>%
     filter(variable == factor) %>%
-    select(fitVariable) %>%
+    select(fit_variable) %>%
     .[[1]] %>%
     .[[1]]
 }

@@ -76,6 +76,7 @@ predDistData <- function(maxSurvival=0.9){
 }
 
 final_data  <- function(){
-  bind_rows(predTData(), predLData(), predDepthData(), predDistData())
+  df <- bind_rows(predTData(), predLData(), predDepthData(), predDistData())
+  df %>% mutate(variable = tolower(variable))
 }
 

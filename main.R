@@ -19,7 +19,7 @@ predation_survival_driver_func <- function(){
   # create a table of glm's fitted to the literature data
   model_table <- table_of_logistic_models(raw_data)
   
-  # create a table of x incremented x values for each variable
+  # create a table of incremented x values for each variable
   x_values <- x_value_df(range_of_params())
   
   # make predictions for the table of x values

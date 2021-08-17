@@ -3,7 +3,7 @@ library("tidyverse")
 # create a table of the variables affecting predation; the min and max values you expect to appear in the environment; and
 # the increment by which the values should change
 
-range_of_params_df <- function(){
+range_of_params <- function(){
   data.frame(variable = c('temp', 'length', 'dis to cover', 'depth'), 
              min_x = c(0.0, 0.0, 0.0, 0.0), 
              max_x = c(30, 50, 3, 2), 
@@ -14,10 +14,8 @@ range_of_params_df <- function(){
 # create a table of values for each variable over the range and increment specified above 
 # if someone knows how to do this via an apply function, let me know
 
-x_value_df <- function(){
-  # initialize the table with your variables and bounds
-  df <- range_of_params_df()
-  
+x_value_df <- function(df){
+
   # create an empty list to store results from the loop
   prediction_list = list()
   

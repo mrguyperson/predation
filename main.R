@@ -1,41 +1,27 @@
-#library("here")
 library("tidyverse")
 library("openxlsx")
 library("rstudioapi")
 library("broom")
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
-#source("general_logistic_model.R")
 source("data_processing.R")
+source("prediction_tables.R")
+source("model_table.R")
+source("survival_prediction_table.R")
 
-# load the data (path and sheetName are currently hardcoded for testing)
+# driver function that outputs a table of variables affecting predation survival,
+# as well as the range of those values and prections
 
-
-model_table <- final_data() %>% 
-  group_by(variable) %>%
-  do(fit_variable = glm(unitless_value ~ x,
-                            family = quasibinomial(logit),
-                            data = .)) #%>%
-  #unnest(fitVariable)
-
-model_table <- final_data() %>% 
-  group_by(variable) %>%
-  summarize(fit_variable = tidy(glm(unitless_value ~ x,
-                        family = quasibinomial(logit),
-                        data = .))) #%>%
-#unnest(fitVariable)
-model <- function(model_table, factor){
-  model_table %>%
-    filter(variable == factor) %>%
-    select(fit_variable) %>%
-    .[[1]] %>%
-    .[[1]]
+predation_survival_driver_func <- function(){
+  # create a dataframe of data from the literature
+  raw_data <- final_data()
+  
+  # create a table of glm's fitted to the literature data
+  model_table <- table_of_logistic_models(raw_data)
+  
+  # create a table of x incremented x values for each variable
+  x_values <- x_value_df(range_of_params())
+  
+  # make predictions for the table of x values
+  survival_table <- survival_prediction_table(x_values, model_table)
 }
-
-  #unnest(cols = c(fitVariable))
-
-final_data() %>% distinct(variable)
-
-
-df <- data.frame(variable = 'Temp', x = seq(0, 30, by=0.1))
-df %>% mutate(predict = predict.glm(model(model_table, 'Temp'), df, type = 'response'))

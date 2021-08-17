@@ -13,7 +13,7 @@ predTData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
   ungroup() 
 
 # do a logistic fit
-predTModel = glm(predTData$unitlessValue ~ predTData$X,
+predTModel = glm(predTData$unitlessValue ~ predTData$x,
                  family=quasibinomial(logit),
                  data=predTData)
 

@@ -1,10 +1,6 @@
 library("tidyverse")
 library("rstudioapi")
 library("broom")
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-source("data_processing.R")
-source("prediction_tables.R")
-source("model_table.R")
 
 # outputs a table of predicted survival values for each variable affecting predation
 # df is intended to work with functions from prediction_tables.R

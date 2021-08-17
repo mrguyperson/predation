@@ -1,10 +1,6 @@
 library("tidyverse")
 library("rstudioapi")
 library("broom")
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
-source("data_processing.R")
-source("prediction_tables.R")
 
 # creates a nested tibble of logistic fits to fish parameter data. intended to take
 # full_raw_data() as df from data_processing.R

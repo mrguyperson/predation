@@ -72,7 +72,7 @@ predDistData <- function(maxSurvival=0.9){
     select(variable, x, unitless_value)
 }
 
-final_data  <- function(){
+full_raw_data  <- function(){
   df <- bind_rows(predTData(), predLData(), predDepthData(), predDistData())
   df %>% mutate(variable = tolower(variable))
 }

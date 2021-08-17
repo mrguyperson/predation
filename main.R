@@ -14,7 +14,7 @@ source("survival_prediction_table.R")
 
 predation_survival_driver_func <- function(){
   # create a dataframe of data from the literature
-  raw_data <- final_data()
+  raw_data <- full_raw_data()
   
   # create a table of glm's fitted to the literature data
   model_table <- table_of_logistic_models(raw_data)

@@ -8,10 +8,10 @@ library("broom")
 table_of_logistic_models <- function(df){
   df %>%
     # nest the table per variable
-    nest(df = c(x, unitless_value), cols=-variable) %>%
+    nest(data = c(x, unitless_value)) %>%
     
     # add a new column of fitted glm models for each variable
-    mutate(fit = map(df, ~ glm(unitless_value ~ x,
+    mutate(fit = map(data, ~ glm(unitless_value ~ x,
                                  family = quasibinomial(logit),
                                  data = .)))
 }

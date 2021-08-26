@@ -849,11 +849,14 @@ ggplot(predTWFitData, aes(x = temperature)) +
 predLData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
                       sheet = "mortFishByMort",
                       na.strings = "NA") %>% 
-  filter(note != "outlier") %>% 
+  filter(note != "outlier") %>%
   mutate(dailySurvival = NA,
          dailySurvival = ifelse(units == "survival", measure^(1/time_days), dailySurvival),
          dailySurvival = ifelse(units == "daily survival", measure, dailySurvival),
-         dailySurvival = ifelse(units == "relative vlun.", 1-measure, dailySurvival))
+         dailySurvival = ifelse(units == "relative vlun.", 1-measure, dailySurvival),
+         dailySurvival = ifelse(units == "not eaten", measure, dailySurvival))
+  # filter(units == "not eaten") %>%
+  # mutate(dailySurvival = measure)
 
 # do a logistic fit
 predLModel = glm(predLData$dailySurvival ~ predLData$length_cm,

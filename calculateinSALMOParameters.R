@@ -853,8 +853,8 @@ predLData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
   mutate(dailySurvival = NA,
          dailySurvival = ifelse(units == "survival", measure^(1/time_days), dailySurvival),
          dailySurvival = ifelse(units == "daily survival", measure, dailySurvival),
-         dailySurvival = ifelse(units == "relative vlun.", 1-measure, dailySurvival),
-         dailySurvival = ifelse(units == "not eaten", measure, dailySurvival))
+         dailySurvival = ifelse(units == "relative vlun.", 1-measure, dailySurvival))
+         #dailySurvival = ifelse(units == "not eaten", measure, dailySurvival))
   # filter(units == "not eaten") %>%
   # mutate(dailySurvival = measure)
 
@@ -889,7 +889,8 @@ ggplot(predLWFitData, aes(x = length_cm)) +
   labs(y = "Fraction present", x = "Length (cm)") +
   geom_point(aes(y = dailySurvival)) +
   geom_path(aes(y = predict), color = "red")+
-  geom_path(aes(y = overide), color = "blue")
+  geom_path(aes(y = overide), color = "blue")+
+  ggtitle("Using mortFishByMort data")
 
 
 ##### Data on predation preventation from turbidity (mortFishAqPredU) #####

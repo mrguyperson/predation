@@ -1,4 +1,6 @@
 library('tidyverse')
+library("rstudioapi")
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 prey_conv <- function(a, B, pred_L){
   exp(a + B * log(pred_L))
@@ -38,3 +40,17 @@ ggplot(predDWFitData, aes(x = density)) +
   geom_point(aes(y = survival)) +
   geom_path(aes(y = predict), color = "red")
   #ggtitle("Using cum. prop. and gape limitation")
+
+
+angle_calc <- function(length){
+  0.0167 * exp(9.14 - 2.4 * log(length) + 0.229 * log(length)^2)
+}
+predLData <- read.csv('./lmb_stb_combined.csv') %>%
+  mutate(max_prey_length = prey_conv(0.443, 0.774, length_mm),
+         safety = cumulative_proportion - proportion_of_total,
+         angle = angle_calc(length_mm),
+         reaction_dist = max_prey_length / (2 * tan(angle / 2)))
+predLData
+
+
+

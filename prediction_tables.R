@@ -7,7 +7,7 @@ range_of_params <- function(){
   data.frame(variable = c('temp', 'length', 'dis to cover', 'depth'), 
              min_x = c(0.0, 0.0, 0.0, 0.0), 
              max_x = c(30, 50, 3, 2), 
-             interval = c(0.1, 0.1, 0.01, 0.01)
+             interval = c(0.1, 0.01, 0.01, 0.01)
              )
 }
 

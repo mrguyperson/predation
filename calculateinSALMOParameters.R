@@ -814,19 +814,19 @@ ggplot(predDistWFitData, aes(x = value)) +
 predTData = read.xlsx(xlsxFile = "./inSALMO Fish Parameters.xlsx",
                              sheet = "mortAqByPredMet",
                              na.strings = "NA") %>% 
-  group_by(author, year, jounral) %>% 
-  mutate(unitlessValue = 1-value/max(value)) %>% 
+  group_by(author, year, journal) %>% 
+  mutate(unitlessValue = value/max(value)) %>% 
   ungroup() 
 
 # do a logistic fit
-predTModel = glm(predTData$unitlessValue ~ predTData$temperature,
+predTModel = glm(predTData$unitlessValue ~ predTData$x,
                     family=quasibinomial(logit),
                     data=predTData)
 
 # add in predictions for plotting
 predTWFitData = predTData %>% 
   mutate(predict = predict.glm(predTModel, type = "response")) %>% 
-  arrange(temperature)
+  arrange(x)
 
 # solve for inSALMO Parameters 
 # convert form m to cm
@@ -835,7 +835,7 @@ mortFishAqPredT9 = -(log(1/0.9-1)+predTModel[[1]][1])/predTModel[[1]][2]
 
 # Plot
 
-ggplot(predTWFitData, aes(x = temperature)) +
+ggplot(predTWFitData, aes(x = x)) +
   theme_classic(base_size = 30) +
   labs(y = "Fraction present", x = "T (C)") +
   geom_point(aes(y = unitlessValue)) +

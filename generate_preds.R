@@ -3,6 +3,7 @@ library('plyr')
 library('raster')
 library('wesanderson')
 library('sn')
+library('tictoc')
 
 lit_zone_size <- 5
 channel_width <- 100
@@ -21,9 +22,14 @@ grid_size <- 15
 #   }
 # }
 
-number_of_stripers <- function(mean_low = 60, sd_low = 43, mean_high = 870, sd_high = 491.5){
+
+# calculates the number of striped bass in a reach;
+# assumes that striped bass either occur in small numbers or in huge aggregations
+# means and SDs are from values in Michel et al. 2018 
+
+number_of_stripers <- function(mean_low = 60, sd_low = 43, mean_high = 870, sd_high = 491.5, agg_prob = 1/3){
   stripers <- 0
-  aggregation <- sample(c(TRUE,FALSE),1)
+  aggregation <- sample(c(TRUE,FALSE), 1, prob = c(agg_prob, 1 - agg_prob))
   
   if(aggregation){
     while(stripers < 1){
@@ -43,6 +49,9 @@ number_of_stripers <- function(mean_low = 60, sd_low = 43, mean_high = 870, sd_h
   }  
 }
 
+# calculates number of striped bass in a reach;
+# assumes a normal distribution but only picks values with 1 SD of the mean
+
 number_of_lmb <- function(mean = 333, sd = 195){
   lmb <- 0
   while(lmb <= mean - sd | lmb >= mean + sd){
@@ -53,7 +62,10 @@ number_of_lmb <- function(mean = 333, sd = 195){
   }
 }
 
-
+# creates a data.frame of predator x, y positions in the littoral zone;
+# i.e., near shore
+# calculates the position from shore and the position downstream
+# can be used for either the left or right bank
 
 bank_preds <- function(number_of_bass, transect_length, lit_zone_size, zone_start, zone_end, current_transect){
   data.frame(distance_downstream = runif(number_of_bass, 
@@ -65,6 +77,7 @@ bank_preds <- function(number_of_bass, transect_length, lit_zone_size, zone_star
     arrange(distance_downstream)
 }
 
+# creates a data.frame of predator x, y positions in the channel area
 
 channel_preds <- function(number_of_bass, transect_length, lit_zone_size, channel_width, current_transect){
   data.frame(distance_downstream = runif(number_of_bass, 
@@ -76,22 +89,13 @@ channel_preds <- function(number_of_bass, transect_length, lit_zone_size, channe
     arrange(distance_downstream)
 }
 
-
-grid_num <- function(x, grid_size){
-  grid_val <- round_any(x, grid_size, ceiling)
-  return(grid_val/grid_size)
-  
-}
-
-add_grid_nums <- function(df, x, grid_size){
-  df %>% mutate(grid = grid_num(distance_downstream))
-}
-
+# calculates the number of lmb and stb per reach and their positions for each zone
+# compiles all points into one data.frame
 
 get_pred_postitions <- function(transect_length, n_transects, lit_zone_size, channel_width){
-  left_bank_preds_list <- list()
-  right_bank_preds_list <- list()
-  channel_preds_list <- list()
+  left_bank_preds_list <- vector(mode="list",length=n_transects)
+  right_bank_preds_list <- vector(mode="list",length=n_transects)
+  channel_preds_list <- vector(mode="list",length=n_transects)
   
   for(i in seq(n_transects)){
     lmb <-  number_of_lmb()
@@ -123,6 +127,10 @@ get_pred_postitions <- function(transect_length, n_transects, lit_zone_size, cha
 
 }
 
+# creates and overlays a raster onto the predator positons
+# raster size mimics the cells in netlogo
+# returns a data.frame with coordinates for the cells and counts of fish in each cell
+
 create_stream_raster_frame <- function(df, transect_length, channel_width, grid_size, n_transects){
   r <- raster(xmn = 0, 
               ymn = 0, 
@@ -135,12 +143,17 @@ create_stream_raster_frame <- function(df, transect_length, channel_width, grid_
   d <- data.frame(coordinates(r), count=r[])
 }
 
+# calculates encounter probability for each cell
+# based on the idea that each predator will engage prey with a certain radius
+# total area occupied by predators divided by cell area is the encounter probability
+
 calc_enc_probs <- function(df, grid_size, reaction_dis=0.5){
   data.frame(coordinates(df), count=df[]) %>%
     mutate(pred_area = count * reaction_dis^2 * pi,
            enc_prob = pred_area / grid_size^2)
 }
 
+# graphs the positions of all predators in the stream
 
 graph_pred_positions <- function(df){
   ggplot(df, aes(x = distance_downstream)) +
@@ -149,6 +162,7 @@ graph_pred_positions <- function(df){
     geom_point(aes(y = distance_from_shore))
 }
 
+# graphs a heatmap of encounter probabilities 
 
 graph_enc_probs <- function(df){
   pa  <- wes_palettes %>% 
@@ -164,9 +178,49 @@ graph_enc_probs <- function(df){
 
 tic()
 pred_pos <- get_pred_postitions(transect_length, n_transects, lit_zone_size, channel_width)
+
 stream_grid_frame <- create_stream_raster_frame(pred_pos, transect_length, channel_width, grid_size, n_transects)
 enc_probs <- calc_enc_probs(stream_grid_frame, grid_size)
 toc()
 
 graph_pred_positions(pred_pos)
 graph_enc_probs(enc_probs)
+
+tic()
+lmb_list <- rep(NA, n_transects)
+stb_list <- rep(NA, n_transects)
+for(i in seq(n_transects)){
+  lmb <- number_of_lmb()
+  stb <- number_of_stripers()
+  lmb_list[i] <- lmb
+  stb_list[i] <- stb
+}
+
+df <- data.frame(transect = seq(n_transects), lmb = lmb_list, stb = stb_list)
+
+
+left_bank <- lapply(df$transect, bank_preds, 
+                    number_of_bass=lmb/2 + stb/4, 
+                    transect_length=transect_length, 
+                    lit_zone_size=lit_zone_size, 
+                    zone_start=0, 
+                    zone_end=lit_zone_size)
+right_bank <- lapply(df$transect, bank_preds, 
+                     number_of_bass=lmb/2 + stb/4, 
+                     transect_length=transect_length, 
+                     lit_zone_size=lit_zone_size, 
+                     zone_start=channel_width-lit_zone_size, 
+                     zone_end=channel_width)
+channel <- lapply(df$transect, channel_preds, 
+                  number_of_bass=stb/2, 
+                  transect_length=transect_length, 
+                  lit_zone_size=lit_zone_size, 
+                  channel_width=channel_width)
+
+final <- bind_rows(left_bank,right_bank,channel)
+
+toc()
+
+graph_pred_positions(final)
+nrow(final)
+nrow(pred_pos)

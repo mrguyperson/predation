@@ -1,15 +1,17 @@
-library('tidyverse')
-library('plyr')
 library('raster')
+library(dplyr)
+library('tidyverse')
+
 library('wesanderson')
-library('sn')
+# library('sn')
 library('tictoc')
 
-lit_zone_size <- 5
-channel_width <- 100
-transect_length  <- 1000
-n_transects  <- 157
-grid_size <- 15
+default_lit_zone_size <- 5
+default_channel_width <- 100
+default_transect_length  <- 1000
+default_n_transects  <- 200
+default_grid_size <- 15
+default_reaction_dis <- 0.5
 
 # number_of_stripers <- function(mean = 334, sd = 447, skewness = 0.9){
 #   stripers <- 0
@@ -131,7 +133,11 @@ grid_size <- 15
 # raster size mimics the cells in netlogo
 # returns a data.frame with coordinates for the cells and counts of fish in each cell
 
-create_stream_raster_frame <- function(df, transect_length, channel_width, grid_size, n_transects){
+create_stream_raster_frame <- function(df, 
+                                       transect_length = default_transect_length, 
+                                       channel_width = default_channel_width, 
+                                       grid_size = default_grid_size, 
+                                       n_transects = default_n_transects){
   r <- raster(xmn = 0, 
               ymn = 0, 
               xmx = transect_length * n_transects, 
@@ -147,7 +153,9 @@ create_stream_raster_frame <- function(df, transect_length, channel_width, grid_
 # based on the idea that each predator will engage prey with a certain radius
 # total area occupied by predators divided by cell area is the encounter probability
 
-calc_enc_probs <- function(df, grid_size, reaction_dis=0.5){
+calc_enc_probs <- function(df, 
+                           grid_size = default_grid_size, 
+                           reaction_dis = default_reaction_dis){
   data.frame(coordinates(df), count=df[]) %>%
     mutate(pred_area = count * reaction_dis^2 * pi,
            enc_prob = pred_area / grid_size^2)
@@ -177,12 +185,19 @@ graph_enc_probs <- function(df){
 
 
 
-lmb_calc <- function(n, mean = 333, sd = 195){
+lmb_calc <- function(n, 
+                     mean = 333, 
+                     sd = 195){
   draws <- rnorm(2*n, mean, sd)
   draws <- draws[draws > 0][1:n]
 }
 
-striper_calc <- function(n, agg_ratio = 1/3, mean_low = 60, sd_low = 43, mean_high = 870, sd_high = 491.5){
+striper_calc <- function(n, 
+                         agg_ratio = 1/3, 
+                         mean_low = 60, 
+                         sd_low = 43, 
+                         mean_high = 870, 
+                         sd_high = 491.5){
   aggs <- rnorm(n, mean_high, sd_high)
   not_aggs <- rnorm(2*n, mean_low, sd_low)
   
@@ -194,7 +209,9 @@ striper_calc <- function(n, agg_ratio = 1/3, mean_low = 60, sd_low = 43, mean_hi
 }
 
 
-distance_downstream <- function(number_of_bass, transect_length, current_transect){
+distance_downstream <- function(number_of_bass, 
+                                transect_length = default_transect_length, 
+                                current_transect){
   runif(number_of_bass, 
         min = transect_length * current_transect - transect_length, 
         max = transect_length * current_transect)
@@ -208,7 +225,10 @@ distance_from_shore <- function(number_of_bass, min, max){
 
 
 
-get_pred_postitions <- function(transect_length, n_transects, lit_zone_size, channel_width){
+get_pred_postitions <- function(transect_length = default_transect_length, 
+                                n_transects = default_n_transects, 
+                                lit_zone_size = default_lit_zone_size, 
+                                channel_width = default_channel_width){
   left_bank_dis_ds <- vector(mode="list",length=n_transects)
   left_bank_dis_fr_s <- vector(mode="list",length=n_transects)
   right_bank_dis_ds <- vector(mode="list",length=n_transects)
@@ -254,12 +274,13 @@ get_pred_postitions <- function(transect_length, n_transects, lit_zone_size, cha
 
 
 
+tic()
+pred_pos <- get_pred_postitions()
 
-pred_pos <- get_pred_postitions(transect_length, n_transects, lit_zone_size, channel_width)
 
 
-stream_grid_frame <- create_stream_raster_frame(pred_pos, transect_length, channel_width, grid_size, n_transects)
-enc_probs <- calc_enc_probs(stream_grid_frame, grid_size)
+stream_grid_frame <- create_stream_raster_frame(pred_pos)
+enc_probs <- calc_enc_probs(stream_grid_frame)
 
 
 graph_pred_positions(pred_pos)

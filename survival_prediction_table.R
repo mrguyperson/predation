@@ -15,11 +15,11 @@ survival_prediction_table <- function(df, model_table){
     inner_join(model_table, by = 'variable') %>%
     
     # preditct survival values based on the x values and glms
-    mutate(survival = map2(fit, x, predict.glm, type='response')) %>%
+    mutate(survival = purrr::map2(fit, x, predict.glm, type='response')) %>%
     
     # unnest the x values and survival values
     unnest(c(x, survival)) %>%
     
     # save the variable name, x value, and survival prediction
-    select(variable, x, survival)
+    dplyr::select(variable, x, survival)
 }

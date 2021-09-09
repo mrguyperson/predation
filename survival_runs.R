@@ -1,5 +1,7 @@
 library("rstudioapi")
 library('tidyverse')
+library('future.apply')
+plan(multisession)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 source('generate_preds.R')
 source('main.R')
@@ -139,6 +141,75 @@ survival_simulation_driver <- function(number_of_fish){
   number_of_survivors <- calculate_number_of_survivors(fish_summary_frame, num_trans)
   proprtion_of_survivors <- calculat_proportion_of_survivors(number_of_survivors, number_of_fish)
 }
+
+#### using future
+future_calculate_number_of_survivors <- function(fish_summary_frame, num_trans_traversed){
+  fish_summary_frame %>%
+    mutate(final_status = future_lapply(total_alive_outcomes, FUN = evaluate_final_status_of_fish, num_trans_traversed)) %>%
+    unnest(final_status) %>%
+    summarize(num_surviving = sum(final_status))
+}
+
+
+future_add_encounter_simulation_columns <- function(combined_frame){
+  combined_frame%>%
+    mutate(survival_boost = as.numeric(survival_boost),
+           enc_prob = as.numeric(enc_prob),
+           modified_enc = calculate_encounter_prob_based_on_length(survival_boost, enc_prob),
+           encounter = future_lapply(modified_enc, check_if_encounter_occurs, future.seed=TRUE),
+           alive = as.numeric(lapply(encounter, encounter_simulator))) 
+}
+
+
+future_add_length_survival_boost <- function(fish_frame, surv_table){
+  fish_frame %>%
+    mutate(survival_boost = future_lapply(length, FUN = calcule_risk_modifier, survival_table = surv_table, selected_variable = 'length',future.seed=TRUE))
+}
+
+future_create_frame_of_all_cells_traversed_per_fish <- function(fish_vector, enc_prob_vector, num_trans_traversed){
+  df <- bind_rows(future_lapply(fish_vector, 
+                         FUN = encounter_frame, 
+                         enc_prob_vector, 
+                         num_trans_traversed,future.seed=TRUE))
+}
+
+
+
+future_survival_simulation_driver <- function(number_of_fish){
+  num_trans <- calculate_num_trans_traversed()
+  pred_pos <- get_pred_postitions()
+  stream_grid_frame <- create_stream_raster_frame(pred_pos)
+  enc_probs <- calc_enc_probs(stream_grid_frame)
+  enc_prob_vector <- get_enc_prob_vector(enc_probs)
+  surv_table <- predation_survival_driver_func()
+  fish_frame <- set_up_dataframe_of_fish_lengths(number_of_fish)
+  fish_frame_with_survival_from_length <- future_add_length_survival_boost(fish_frame,surv_table)
+  cells_traversed <- future_create_frame_of_all_cells_traversed_per_fish(fish_frame_with_survival_from_length$fish, enc_prob_vector, num_trans)
+  joined_fish_cell_traversed <- combine_encounter_frame_and_fish_frame(fish_frame_with_survival_from_length, cells_traversed)
+  joined_frame_with_sim_cols <- future_add_encounter_simulation_columns(joined_fish_cell_traversed)
+  fish_summary_frame <- sum_encounter_outcomes(joined_frame_with_sim_cols)
+  number_of_survivors <- future_calculate_number_of_survivors(fish_summary_frame, num_trans)
+  proprtion_of_survivors <- calculat_proportion_of_survivors(number_of_survivors, number_of_fish)
+}
+
+
+library(tictoc)
+
+tic()
+
+survival_simulation_driver(10)
+
+toc()
+
+
+tic()
+
+future_survival_simulation_driver(10)
+
+toc()
+
+
+
 
 # lapply(joined_frame_with_sim_cols$modified_enc, check_if_encounter_occurs)
 # 

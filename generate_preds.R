@@ -9,7 +9,7 @@ library('tictoc')
 default_lit_zone_size <- 5
 default_channel_width <- 100
 default_transect_length  <- 1000
-default_n_transects  <- 200
+default_n_transects  <- 20
 default_grid_size <- 15
 default_reaction_dis <- 0.5
 

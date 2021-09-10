@@ -4,12 +4,12 @@ library('tidyverse')
 
 library('wesanderson')
 # library('sn')
-library('tictoc')
+
 
 default_lit_zone_size <- 5
 default_channel_width <- 100
 default_transect_length  <- 1000
-default_n_transects  <- 20
+default_n_transects  <- 200
 default_grid_size <- 15
 default_reaction_dis <- 0.5
 
@@ -270,19 +270,19 @@ get_pred_postitions <- function(transect_length = default_transect_length,
   
 }
 
-
-
-
-
-tic()
-pred_pos <- get_pred_postitions()
-
-
-
-stream_grid_frame <- create_stream_raster_frame(pred_pos)
-enc_probs <- calc_enc_probs(stream_grid_frame)
-
-
-graph_pred_positions(pred_pos)
-graph_enc_probs(enc_probs)
+# 
+# 
+# 
+# 
+# tic()
+# pred_pos <- get_pred_postitions()
+# 
+# 
+# 
+# stream_grid_frame <- create_stream_raster_frame(pred_pos)
+# enc_probs <- calc_enc_probs(stream_grid_frame)
+# 
+# 
+# graph_pred_positions(pred_pos)
+# graph_enc_probs(enc_probs)
 

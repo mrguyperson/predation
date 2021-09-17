@@ -269,18 +269,18 @@ toc()
 
 
 
-lengths = seq(7, 15, by = 1)
-reach_length_km = seq(1, 20, by=1)
+
 
 library(furrr)
-
+lengths = seq(7, 15, by = 1)
+reach_length_km = seq(1, 20, by=1)
 tic()
 
 df <- expand.grid(mean_fish_length = lengths, distance_traveled = reach_length_km) %>%
   arrange(mean_fish_length) %>%
   mutate(survival = future_map2(mean_fish_length,distance_traveled,
                                 future_map_survival_simulation_driver, 
-                                number_of_fish = 500,
+                                number_of_fish = 50,
                                 .options=furrr_options(seed=TRUE)))
 toc()
 
